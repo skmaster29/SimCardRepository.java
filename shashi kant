@@ -1,0 +1,48 @@
+package com.example.demo.controller;
+
+import com.example.demo.entity.SimCard;
+import com.example.demo.repository.SimCardRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/simcards")
+public class SimCardController {
+
+    @Autowired
+    private SimCardRepository simCardRepository;
+
+    @PostMapping("/activate")
+    public ResponseEntity<String> activateSimCard(@RequestParam String customerEmail, @RequestParam String iccid) {
+        // Simulating the activation process by sending a request to the SimCardActuator
+        boolean activationStatus = sendActivationRequestToSimCardActuator(iccid);
+
+        // Saving the record in the database
+        SimCard simCard = new SimCard();
+        simCard.setIccid(iccid);
+        simCard.setCustomerEmail(customerEmail);
+        simCard.setActive(activationStatus);
+
+        simCardRepository.save(simCard);
+
+        return ResponseEntity.ok("Sim card activation record saved successfully.");
+    }
+
+    @GetMapping("/query")
+    public ResponseEntity<SimCard> querySimCard(@RequestParam Long simCardId) {
+        Optional<SimCard> simCardOptional = simCardRepository.findById(simCardId);
+        if (simCardOptional.isPresent()) {
+            return ResponseEntity.ok(simCardOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private boolean sendActivationRequestToSimCardActuator(String iccid) {
+        // Simulating the activation request. In a real-world scenario, you would use RestTemplate or WebClient to send the request.
+        return true; // Assuming the activation is always successful for this example.
+    }
+}
